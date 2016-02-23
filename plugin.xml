@@ -1,0 +1,199 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<plugin
+		xmlns="http://apache.org/cordova/ns/plugins/1.0"
+		xmlns:android="http://schemas.android.com/apk/res/android"
+		id="cordova-plugin-lmn-crypto"
+		version="0.0.1">
+	<name>LMN Crypto</name>
+	<description>Cordova LikeMindNetworks Crypto Plugin</description>
+	<license>Apache 2.0</license>
+
+	<js-module src="www/lmn-crypto.js" name="LMNCrypto">
+		<clobbers target="LMNCrypto" />
+	</js-module>
+
+	<platform name="android">
+		<config-file target="config.xml" parent="/*">
+			<feature name="LMNCrypto">
+				<param
+					name="android-package"
+					value="com.likemindnetworks.crypto.AESCipherPlugin" />
+				<param name="onload" value="true" />
+			</feature>
+		</config-file>
+
+		<source-file
+			src="src/android/AESCipherPlugin.java"
+			target-dir="src/com/likemindnetworks/crypto" />
+
+		<source-file
+			target-dir="libs/" framework="true"
+			src="src/android/lib/org.spongycastle/core-1.54.0.0.jar" />
+		<source-file
+			target-dir="libs/" framework="true"
+			src="src/android/lib/org.spongycastle/pg-1.54.0.0.jar" />
+		<source-file
+			target-dir="libs/" framework="true"
+			src="src/android/lib/org.spongycastle/pkix-1.54.0.0.jar" />
+		<source-file
+			target-dir="libs/" framework="true"
+			src="src/android/lib/org.spongycastle/prov-1.54.0.0.jar" />
+
+		<source-file
+			target-dir="libs/" framework="true"
+			src="src/android/lib/com.google/guava-19.0.jar" />
+	</platform>
+
+	<!-- ios -->
+	<platform name="ios">
+		<config-file target="config.xml" parent="/*">
+			<feature name="LMNCrypto">
+				<param name="ios-package" value="LMNCrypto"/>
+			</feature>
+		</config-file>
+
+		<header-file src="src/ios/LMNCrypto.h" />
+		<source-file src="src/ios/LMNCrypto.mm" />
+
+		<source-file src="src/ios/lib/libcryptopp.a" framework="true" />
+		<header-file src="src/ios/include/cryptopp/3way.h" />
+		<header-file src="src/ios/include/cryptopp/adler32.h" />
+		<header-file src="src/ios/include/cryptopp/aes.h" />
+		<header-file src="src/ios/include/cryptopp/algebra.h" />
+		<header-file src="src/ios/include/cryptopp/algparam.h" />
+		<header-file src="src/ios/include/cryptopp/arc4.h" />
+		<header-file src="src/ios/include/cryptopp/argnames.h" />
+		<header-file src="src/ios/include/cryptopp/asn.h" />
+		<header-file src="src/ios/include/cryptopp/authenc.h" />
+		<header-file src="src/ios/include/cryptopp/base32.h" />
+		<header-file src="src/ios/include/cryptopp/base64.h" />
+		<header-file src="src/ios/include/cryptopp/basecode.h" />
+		<header-file src="src/ios/include/cryptopp/bench.h" />
+		<header-file src="src/ios/include/cryptopp/blowfish.h" />
+		<header-file src="src/ios/include/cryptopp/blumshub.h" />
+		<header-file src="src/ios/include/cryptopp/camellia.h" />
+		<header-file src="src/ios/include/cryptopp/cast.h" />
+		<header-file src="src/ios/include/cryptopp/cbcmac.h" />
+		<header-file src="src/ios/include/cryptopp/ccm.h" />
+		<header-file src="src/ios/include/cryptopp/channels.h" />
+		<header-file src="src/ios/include/cryptopp/cmac.h" />
+		<header-file src="src/ios/include/cryptopp/config.h" />
+		<header-file src="src/ios/include/cryptopp/cpu.h" />
+		<header-file src="src/ios/include/cryptopp/crc.h" />
+		<header-file src="src/ios/include/cryptopp/cryptlib.h" />
+		<header-file src="src/ios/include/cryptopp/default.h" />
+		<header-file src="src/ios/include/cryptopp/des.h" />
+		<header-file src="src/ios/include/cryptopp/dh.h" />
+		<header-file src="src/ios/include/cryptopp/dh2.h" />
+		<header-file src="src/ios/include/cryptopp/dll.h" />
+		<header-file src="src/ios/include/cryptopp/dmac.h" />
+		<header-file src="src/ios/include/cryptopp/dsa.h" />
+		<header-file src="src/ios/include/cryptopp/eax.h" />
+		<header-file src="src/ios/include/cryptopp/ec2n.h" />
+		<header-file src="src/ios/include/cryptopp/eccrypto.h" />
+		<header-file src="src/ios/include/cryptopp/ecp.h" />
+		<header-file src="src/ios/include/cryptopp/elgamal.h" />
+		<header-file src="src/ios/include/cryptopp/emsa2.h" />
+		<header-file src="src/ios/include/cryptopp/eprecomp.h" />
+		<header-file src="src/ios/include/cryptopp/esign.h" />
+		<header-file src="src/ios/include/cryptopp/factory.h" />
+		<header-file src="src/ios/include/cryptopp/files.h" />
+		<header-file src="src/ios/include/cryptopp/filters.h" />
+		<header-file src="src/ios/include/cryptopp/fips140.h" />
+		<header-file src="src/ios/include/cryptopp/fltrimpl.h" />
+		<header-file src="src/ios/include/cryptopp/gcm.h" />
+		<header-file src="src/ios/include/cryptopp/gf256.h" />
+		<header-file src="src/ios/include/cryptopp/gf2_32.h" />
+		<header-file src="src/ios/include/cryptopp/gf2n.h" />
+		<header-file src="src/ios/include/cryptopp/gfpcrypt.h" />
+		<header-file src="src/ios/include/cryptopp/gost.h" />
+		<header-file src="src/ios/include/cryptopp/gzip.h" />
+		<header-file src="src/ios/include/cryptopp/hex.h" />
+		<header-file src="src/ios/include/cryptopp/hmac.h" />
+		<header-file src="src/ios/include/cryptopp/hrtimer.h" />
+		<header-file src="src/ios/include/cryptopp/ida.h" />
+		<header-file src="src/ios/include/cryptopp/idea.h" />
+		<header-file src="src/ios/include/cryptopp/integer.h" />
+		<header-file src="src/ios/include/cryptopp/iterhash.h" />
+		<header-file src="src/ios/include/cryptopp/lubyrack.h" />
+		<header-file src="src/ios/include/cryptopp/luc.h" />
+		<header-file src="src/ios/include/cryptopp/mars.h" />
+		<header-file src="src/ios/include/cryptopp/md2.h" />
+		<header-file src="src/ios/include/cryptopp/md4.h" />
+		<header-file src="src/ios/include/cryptopp/md5.h" />
+		<header-file src="src/ios/include/cryptopp/mdc.h" />
+		<header-file src="src/ios/include/cryptopp/misc.h" />
+		<header-file src="src/ios/include/cryptopp/modarith.h" />
+		<header-file src="src/ios/include/cryptopp/modes.h" />
+		<header-file src="src/ios/include/cryptopp/modexppc.h" />
+		<header-file src="src/ios/include/cryptopp/mqueue.h" />
+		<header-file src="src/ios/include/cryptopp/mqv.h" />
+		<header-file src="src/ios/include/cryptopp/nbtheory.h" />
+		<header-file src="src/ios/include/cryptopp/network.h" />
+		<header-file src="src/ios/include/cryptopp/nr.h" />
+		<header-file src="src/ios/include/cryptopp/oaep.h" />
+		<header-file src="src/ios/include/cryptopp/oids.h" />
+		<header-file src="src/ios/include/cryptopp/osrng.h" />
+		<header-file src="src/ios/include/cryptopp/panama.h" />
+		<header-file src="src/ios/include/cryptopp/pch.h" />
+		<header-file src="src/ios/include/cryptopp/pem-com.h" />
+		<header-file src="src/ios/include/cryptopp/pem.h" />
+		<header-file src="src/ios/include/cryptopp/pkcspad.h" />
+		<header-file src="src/ios/include/cryptopp/polynomi.h" />
+		<header-file src="src/ios/include/cryptopp/pssr.h" />
+		<header-file src="src/ios/include/cryptopp/pubkey.h" />
+		<header-file src="src/ios/include/cryptopp/pwdbased.h" />
+		<header-file src="src/ios/include/cryptopp/queue.h" />
+		<header-file src="src/ios/include/cryptopp/rabin.h" />
+		<header-file src="src/ios/include/cryptopp/randpool.h" />
+		<header-file src="src/ios/include/cryptopp/rc2.h" />
+		<header-file src="src/ios/include/cryptopp/rc5.h" />
+		<header-file src="src/ios/include/cryptopp/rc6.h" />
+		<header-file src="src/ios/include/cryptopp/resource.h" />
+		<header-file src="src/ios/include/cryptopp/rijndael.h" />
+		<header-file src="src/ios/include/cryptopp/ripemd.h" />
+		<header-file src="src/ios/include/cryptopp/rng.h" />
+		<header-file src="src/ios/include/cryptopp/rsa.h" />
+		<header-file src="src/ios/include/cryptopp/rw.h" />
+		<header-file src="src/ios/include/cryptopp/safer.h" />
+		<header-file src="src/ios/include/cryptopp/salsa.h" />
+		<header-file src="src/ios/include/cryptopp/seal.h" />
+		<header-file src="src/ios/include/cryptopp/secblock.h" />
+		<header-file src="src/ios/include/cryptopp/seckey.h" />
+		<header-file src="src/ios/include/cryptopp/seed.h" />
+		<header-file src="src/ios/include/cryptopp/serpent.h" />
+		<header-file src="src/ios/include/cryptopp/serpentp.h" />
+		<header-file src="src/ios/include/cryptopp/sha.h" />
+		<header-file src="src/ios/include/cryptopp/sha3.h" />
+		<header-file src="src/ios/include/cryptopp/shacal2.h" />
+		<header-file src="src/ios/include/cryptopp/shark.h" />
+		<header-file src="src/ios/include/cryptopp/simple.h" />
+		<header-file src="src/ios/include/cryptopp/skipjack.h" />
+		<header-file src="src/ios/include/cryptopp/smartptr.h" />
+		<header-file src="src/ios/include/cryptopp/socketft.h" />
+		<header-file src="src/ios/include/cryptopp/sosemanuk.h" />
+		<header-file src="src/ios/include/cryptopp/square.h" />
+		<header-file src="src/ios/include/cryptopp/stdcpp.h" />
+		<header-file src="src/ios/include/cryptopp/strciphr.h" />
+		<header-file src="src/ios/include/cryptopp/tea.h" />
+		<header-file src="src/ios/include/cryptopp/tiger.h" />
+		<header-file src="src/ios/include/cryptopp/trdlocal.h" />
+		<header-file src="src/ios/include/cryptopp/trunhash.h" />
+		<header-file src="src/ios/include/cryptopp/ttmac.h" />
+		<header-file src="src/ios/include/cryptopp/twofish.h" />
+		<header-file src="src/ios/include/cryptopp/validate.h" />
+		<header-file src="src/ios/include/cryptopp/vmac.h" />
+		<header-file src="src/ios/include/cryptopp/wait.h" />
+		<header-file src="src/ios/include/cryptopp/wake.h" />
+		<header-file src="src/ios/include/cryptopp/whrlpool.h" />
+		<header-file src="src/ios/include/cryptopp/winpipes.h" />
+		<header-file src="src/ios/include/cryptopp/words.h" />
+		<header-file src="src/ios/include/cryptopp/xtr.h" />
+		<header-file src="src/ios/include/cryptopp/xtrcrypt.h" />
+		<header-file src="src/ios/include/cryptopp/zdeflate.h" />
+		<header-file src="src/ios/include/cryptopp/zinflate.h" />
+		<header-file src="src/ios/include/cryptopp/zlib.h" />
+	</platform>
+
+</plugin>
