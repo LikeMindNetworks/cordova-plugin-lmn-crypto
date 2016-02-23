@@ -6,9 +6,7 @@ var
 
 var LMNCrypto = function() {};
 
-LMNCrypto.prototype.decryptMessages = function(
-		keyMap, messages, cb
-) {
+LMNCrypto.prototype.decryptMessages = function(keyMap, messages, cb) {
 	exec(
 		function(res) {
 			cb && cb(null, res);
@@ -22,9 +20,7 @@ LMNCrypto.prototype.decryptMessages = function(
 	);
 };
 
-LMNCrypto.prototype.cipherFile = function(
-		fin, fout, keyB64, ivB64, tagSize, cb
-) {
+LMNCrypto.prototype.encryptFile = function(fin, fout, key, cb) {
 	exec(
 		function(res) {
 			cb && cb(null, res);
@@ -33,8 +29,22 @@ LMNCrypto.prototype.cipherFile = function(
 			cb && cb(err);
 		},
 		"LMNCrypto",
-		"cipherFile",
-		[opType, fin, fout, keyB64, ivB64, tagSize]
+		"encryptFile",
+		[fin, fout, key]
+	);
+};
+
+LMNCrypto.prototype.decryptFile = function(fin, fout, key, cb) {
+	exec(
+		function(res) {
+			cb && cb(null, res);
+		},
+		function(err) {
+			cb && cb(err);
+		},
+		"LMNCrypto",
+		"decryptFile",
+		[fin, fout, key]
 	);
 };
 

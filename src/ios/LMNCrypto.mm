@@ -30,7 +30,7 @@ CryptoPP::word64 decodeBase64(const std::string &encoded, byte **result) {
 }
 
 void encryptOrDecryptFile(
-   bool isDecrypt,
+	bool isDecrypt,
 	NSString *finName,
 	NSString *foutName,
 	const byte *key, CryptoPP::word64 keySize,

@@ -6,6 +6,7 @@ import android.util.Base64;
 
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
+import com.google.common.io.ByteStreams;
 
 import org.apache.cordova.CallbackContext;
 import org.apache.cordova.CordovaInterface;
@@ -21,18 +22,27 @@ import org.spongycastle.crypto.generators.PKCS5S2ParametersGenerator;
 import org.spongycastle.crypto.params.KeyParameter;
 import org.spongycastle.jce.provider.BouncyCastleProvider;
 
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
-import java.security.GeneralSecurityException;
+import java.nio.ByteBuffer;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
+import java.security.SecureRandom;
 import java.security.Security;
 import java.security.spec.InvalidKeySpecException;
+import java.security.spec.InvalidParameterSpecException;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 
 import javax.crypto.BadPaddingException;
 import javax.crypto.Cipher;
+import javax.crypto.CipherInputStream;
+import javax.crypto.CipherOutputStream;
 import javax.crypto.IllegalBlockSizeException;
 import javax.crypto.NoSuchPaddingException;
 import javax.crypto.spec.GCMParameterSpec;
@@ -44,10 +54,74 @@ public class AESCipherPlugin extends CordovaPlugin {
 		Security.insertProviderAt(new BouncyCastleProvider(), 1);
 	}
 
-	private final static Cache<String, KeyParameter> pkcsCache = CacheBuilder
-			.newBuilder()
-			.maximumSize(1000)
-			.build();
+	private final static String CIPHER_MODE = "AES/GCM/NoPadding";
+	private final static int FILE_AES_IV_SIZE = 12;
+	private final static int FILE_AES_TAG_SIZE = 16 * 8;
+
+	private final static Cache<KeyDefinition, KeyParameter> pkcsCache
+			= CacheBuilder.newBuilder().maximumSize(1000).build();
+
+	private final static class KeyDefinition {
+		final String key;
+		final String salt;
+		final int keySize;
+		final int iteration;
+
+		KeyDefinition(
+				final String key,
+				final String salt,
+				final int keySize,
+				final int iteration
+		) {
+			this.key = key;
+			this.salt = salt;
+			this.keySize = keySize;
+			this.iteration = iteration;
+		}
+	}
+
+	private final static SecureRandom secureRandom = new SecureRandom();
+
+	private static byte[] getKey(
+			final KeyDefinition keyDef
+	) throws ExecutionException {
+		return pkcsCache
+			.get(
+					keyDef,
+					new Callable<KeyParameter>() {
+
+						@Override
+						public KeyParameter call() throws Exception {
+							PKCS5S2ParametersGenerator generator
+									= new PKCS5S2ParametersGenerator(
+									new SHA256Digest()
+							);
+
+							generator.init(
+									PBEParametersGenerator.PKCS5PasswordToUTF8Bytes(
+											keyDef.key.toCharArray()
+									),
+									Base64.decode(keyDef.salt, Base64.DEFAULT),
+									keyDef.iteration
+							);
+
+							return (KeyParameter) generator
+									.generateDerivedMacParameters(keyDef.keySize);
+						}
+					}
+			)
+			.getKey();
+	}
+
+	public static byte[] hexStringToByteArray(String s) {
+		int len = s.length();
+		byte[] data = new byte[len / 2];
+		for (int i = 0; i < len; i += 2) {
+			data[i / 2] = (byte) ((Character.digit(s.charAt(i), 16) << 4)
+					+ Character.digit(s.charAt(i+1), 16));
+		}
+		return data;
+	}
 
 	@Override
 	public void initialize(CordovaInterface cordova, CordovaWebView webView) {
@@ -71,19 +145,7 @@ public class AESCipherPlugin extends CordovaPlugin {
 						result = decryptMessages(
 								args.getString(0), args.getString(1)
 						);
-					} catch (GeneralSecurityException e) {
-						result = new PluginResult(
-								PluginResult.Status.ERROR, e.getMessage()
-						);
-					} catch (UnsupportedEncodingException e) {
-						result = new PluginResult(
-								PluginResult.Status.ERROR, e.getMessage()
-						);
-					} catch (JSONException e) {
-						result = new PluginResult(
-								PluginResult.Status.ERROR, e.getMessage()
-						);
-					} catch (ExecutionException e) {
+					} catch (Exception e) {
 						result = new PluginResult(
 								PluginResult.Status.ERROR, e.getMessage()
 						);
@@ -96,18 +158,40 @@ public class AESCipherPlugin extends CordovaPlugin {
 					}
 				}
 			});
-		} else if (action.equals("encryptFile")) {
-			// 0th: input file path
-			// 1st: output file path
-			// 2nd: key
-			// 3rd: iv
-			// 4th: tagSize
-//			final String fin = args.getString(0);
-//			final String fout = args.getString(1);
-//			final String keyBase64= args.getString(2);
-//			final String ivBase64 = args.getString(3);
-//			final int tagSize = Integer.valueOf(args.getString(4));
-			throw new JSONException("");
+		} else if (action.equals("encryptFile") || action.equals("decryptFile")) {
+			// fin, fout, keyHex
+			cordova.getThreadPool().execute(new Runnable() {
+				@Override
+				public void run() {
+					PluginResult result = null;
+
+					try {
+						if (action.equals("encryptFile")) {
+							result = encryptFile(
+									args.getString(0),
+									args.getString(1),
+									args.getString(2)
+							);
+						} else {
+							result = decryptFile(
+									args.getString(0),
+									args.getString(1),
+									args.getString(2)
+							);
+						}
+					} catch (Exception e) {
+						result = new PluginResult(
+								PluginResult.Status.ERROR, e.getMessage()
+						);
+					} finally {
+						if (result != null) {
+							result.setKeepCallback(false);
+						}
+
+						callbackContext.sendPluginResult(result);
+					}
+				}
+			});
 		} else {
 			throw new JSONException("");
 		}
@@ -150,14 +234,6 @@ public class AESCipherPlugin extends CordovaPlugin {
 					msgObj.getString("content")
 			);
 
-			final String salt = cipherObj.getString("salt");
-			byte[] ivBytes = Base64.decode(
-					cipherObj.getString("iv"), Base64.DEFAULT
-			);
-			byte[] ctBytes = Base64.decode(
-					cipherObj.getString("ct"), Base64.DEFAULT
-			);
-
 			String keyVersion;
 
 			if (msgObj.has("keyVersion")
@@ -167,40 +243,22 @@ public class AESCipherPlugin extends CordovaPlugin {
 				keyVersion = "_default";
 			}
 
-			final String key = keyMapObj.getString(keyVersion);
-			final int iter = cipherObj.getInt("iter");
-			final String cacheKey = key + iter + salt;
+			byte[] aesKey = getKey(new KeyDefinition(
+					keyMapObj.getString(keyVersion),
+					cipherObj.getString("salt"),
+					cipherObj.getInt("ks"),
+					cipherObj.getInt("iter")
+			));
 
-			KeyParameter keyParameter = pkcsCache.get(
-				cacheKey,
-				new Callable<KeyParameter>() {
-
-					@Override
-					public KeyParameter call() throws Exception {
-						PKCS5S2ParametersGenerator generator
-								= new PKCS5S2ParametersGenerator(
-									new SHA256Digest()
-								);
-
-						generator.init(
-							PBEParametersGenerator.PKCS5PasswordToUTF8Bytes(
-									key.toCharArray()
-							),
-							Base64.decode(salt, Base64.DEFAULT),
-							iter
-						);
-
-						return (KeyParameter) generator
-							.generateDerivedMacParameters(
-								cipherObj.getInt("ks")
-							);
-					}
-				}
-			);
-
-			byte[] aesKey = keyParameter.getKey();
-			Cipher aesCipher = Cipher.getInstance("AES/GCM/NoPadding");
+			Cipher aesCipher = Cipher.getInstance(CIPHER_MODE);
 			SecretKeySpec aesKeySpec = new SecretKeySpec(aesKey, "AES");
+
+			byte[] ivBytes = Base64.decode(
+					cipherObj.getString("iv"), Base64.DEFAULT
+			);
+			byte[] ctBytes = Base64.decode(
+					cipherObj.getString("ct"), Base64.DEFAULT
+			);
 
 			aesCipher.init(
 					Cipher.DECRYPT_MODE,
@@ -208,14 +266,104 @@ public class AESCipherPlugin extends CordovaPlugin {
 					new GCMParameterSpec(cipherObj.getInt("ts"), ivBytes)
 			);
 
-			msgObj.put(
-					"content", new String(aesCipher.doFinal(ctBytes), "UTF-8")
-			);
+			msgObj.put("content", new String(aesCipher.doFinal(ctBytes), "UTF-8"));
 
 			resMessagesObjs.put(i, msgObj);
 		}
 
 		return new PluginResult(PluginResult.Status.OK, resMessagesObjs);
+	}
+
+	@TargetApi(Build.VERSION_CODES.KITKAT)
+	private PluginResult encryptFile(
+			final String finPath,
+			final String foutPath,
+			final String key
+	) throws
+			NoSuchPaddingException,
+			NoSuchAlgorithmException,
+			IOException,
+			InvalidKeyException,
+			InvalidParameterSpecException,
+			InvalidAlgorithmParameterException
+	{
+		byte[] ivBytes = new byte[FILE_AES_IV_SIZE];
+		secureRandom.nextBytes(ivBytes);
+
+		Cipher aesCipher = Cipher.getInstance(CIPHER_MODE);
+		aesCipher.init(
+				Cipher.ENCRYPT_MODE,
+				new SecretKeySpec(hexStringToByteArray(key), "AES"),
+				new GCMParameterSpec(FILE_AES_TAG_SIZE, ivBytes)
+		);
+
+		final InputStream fin = new FileInputStream(finPath);
+		final OutputStream fout = new FileOutputStream(foutPath);
+
+		try {
+			// write out iv to output file first
+			fout.write(ByteBuffer.allocate(4).putInt(FILE_AES_TAG_SIZE).array());
+			fout.write(ByteBuffer.allocate(4).putInt(FILE_AES_IV_SIZE).array());
+			fout.write(ivBytes);
+
+			ByteStreams.copy(fin, new CipherOutputStream(fout, aesCipher));
+			fout.flush();
+		} finally {
+			fin.close();
+			fout.close();
+		}
+
+		return new PluginResult(PluginResult.Status.NO_RESULT);
+	}
+
+	@TargetApi(Build.VERSION_CODES.KITKAT)
+	private PluginResult decryptFile(
+			final String finPath,
+			final String foutPath,
+			final String key
+	) throws
+			NoSuchPaddingException,
+			NoSuchAlgorithmException,
+			IOException,
+			InvalidKeyException,
+			InvalidParameterSpecException,
+			InvalidAlgorithmParameterException
+	{
+		final InputStream fin = new FileInputStream(finPath);
+		final OutputStream fout = new FileOutputStream(foutPath);
+
+		try {
+			int tagSize;
+			int ivSize;
+			byte[] intSizeBuf = new byte[4];
+
+			// parse tag size
+			fin.read(intSizeBuf);
+			tagSize = ByteBuffer.wrap(intSizeBuf).getInt();
+
+			// parse iv size
+			fin.read(intSizeBuf);
+			ivSize = ByteBuffer.wrap(intSizeBuf).getInt();
+
+			// read iv
+			byte[] ivBytes = new byte[ivSize];
+			fin.read(ivBytes);
+
+			Cipher aesCipher = Cipher.getInstance(CIPHER_MODE);
+			aesCipher.init(
+					Cipher.DECRYPT_MODE,
+					new SecretKeySpec(hexStringToByteArray(key), "AES"),
+					new GCMParameterSpec(tagSize, ivBytes)
+			);
+
+			ByteStreams.copy(new CipherInputStream(fin, aesCipher), fout);
+			fout.flush();
+		} finally {
+			fin.close();
+			fout.close();
+		}
+
+		return new PluginResult(PluginResult.Status.NO_RESULT);
 	}
 
 }
