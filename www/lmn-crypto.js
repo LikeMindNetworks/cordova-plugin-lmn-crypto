@@ -6,20 +6,6 @@ var
 
 var LMNCrypto = function() {};
 
-LMNCrypto.prototype.decryptMessages = function(keyMap, messages, cb) {
-	exec(
-		function(res) {
-			cb && cb(null, res);
-		},
-		function(err) {
-			cb && cb(err);
-		},
-		"LMNCrypto",
-		"decryptMessages",
-		[keyMap, messages]
-	);
-};
-
 LMNCrypto.prototype.encryptFile = function(fin, fout, key, cb) {
 	exec(
 		function(res) {

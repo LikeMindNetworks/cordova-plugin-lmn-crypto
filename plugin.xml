@@ -29,19 +29,6 @@
 
 		<source-file
 			target-dir="libs/" framework="true"
-			src="src/android/lib/org.spongycastle/core-1.54.0.0.jar" />
-		<source-file
-			target-dir="libs/" framework="true"
-			src="src/android/lib/org.spongycastle/pg-1.54.0.0.jar" />
-		<source-file
-			target-dir="libs/" framework="true"
-			src="src/android/lib/org.spongycastle/pkix-1.54.0.0.jar" />
-		<source-file
-			target-dir="libs/" framework="true"
-			src="src/android/lib/org.spongycastle/prov-1.54.0.0.jar" />
-
-		<source-file
-			target-dir="libs/" framework="true"
 			src="src/android/lib/com.google/guava-19.0.jar" />
 	</platform>
 
