@@ -125,17 +125,19 @@ public class AESCipherPlugin extends CordovaPlugin {
 
 		final InputStream fin = new FileInputStream(finPath);
 		final OutputStream fout = new FileOutputStream(foutPath);
+		final CipherOutputStream cipherOut
+				= new CipherOutputStream(fout, aesCipher);
 
 		try {
 			// write out iv to output file first
 			fout.write(ByteBuffer.allocate(4).putInt(IV_BYTE_SIZE).array());
 			fout.write(ivBytes);
 
-			ByteStreams.copy(fin, new CipherOutputStream(fout, aesCipher));
+			ByteStreams.copy(fin, cipherOut);
 			fout.flush();
 		} finally {
+			cipherOut.close();
 			fin.close();
-			fout.close();
 		}
 
 		return new PluginResult(PluginResult.Status.OK);
@@ -176,10 +178,14 @@ public class AESCipherPlugin extends CordovaPlugin {
 					new IvParameterSpec(ivBytes)
 			);
 
-			ByteStreams.copy(new CipherInputStream(fin, aesCipher), fout);
+			final CipherInputStream cipherIn
+					= new CipherInputStream(fin, aesCipher);
+
+			ByteStreams.copy(cipherIn, fout);
+
 			fout.flush();
+			cipherIn.close();
 		} finally {
-			fin.close();
 			fout.close();
 		}
 
