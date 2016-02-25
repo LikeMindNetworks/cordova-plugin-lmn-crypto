@@ -1,0 +1,24 @@
+{
+  "name": "cordova-plugin-lmn-crypto",
+  "version": "1.0.1",
+  "description": "lmn cordova",
+  "main": "plugin.xml",
+  "scripts": {},
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/LikeMindNetworks/cordova-plugin-lmn-crypto.git"
+  },
+  "keywords": [
+    "crypto"
+  ],
+  "author": "LikeMindNetworks Inc.",
+  "bugs": {
+    "url": "https://github.com/LikeMindNetworks/cordova-plugin-lmn-crypto/issues"
+  },
+  "homepage": "https://github.com/LikeMindNetworks/cordova-plugin-lmn-crypto#readme",
+  "devDependencies": {
+    "del": "^2.2.0",
+    "gulp": "^3.9.1",
+    "gulp-decompress": "^1.2.0"
+  }
+}
