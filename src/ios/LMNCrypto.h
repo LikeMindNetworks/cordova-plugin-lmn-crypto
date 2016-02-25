@@ -4,8 +4,6 @@
 @interface LMNCrypto : CDVPlugin
 {}
 
-- (void)decryptString:(CDVInvokedUrlCommand*)command;
-
 - (void)encryptFile:(CDVInvokedUrlCommand*)command;
 - (void)decryptFile:(CDVInvokedUrlCommand*)command;
 
