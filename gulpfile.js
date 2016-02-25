@@ -19,7 +19,7 @@ gulp.task('build', ['clean'], function() {
 		.src(['plugin.xml', 'package.json'])
 		.pipe(gulp.dest('build'));
 
-	gulp
+	return gulp
 		.src('src/ios/lib/libcryptopp.a.zip')
 		.pipe(decompress())
 		.pipe(gulp.dest('build/src/ios/lib'));
