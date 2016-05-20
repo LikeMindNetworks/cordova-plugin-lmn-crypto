@@ -3,13 +3,13 @@
 
 #import "LMNCrypto.h"
 
-#import "aes.h"
-#import "files.h"
-#import "base64.h"
-#import "hex.h"
-#import "filters.h"
-#import "gcm.h"
-#import "cryptlib.h"
+#import "lmn_aes.h"
+#import "lmn_files.h"
+#import "lmn_base64.h"
+#import "lmn_hex.h"
+#import "lmn_filters.h"
+#import "lmn_gcm.h"
+#import "lmn_cryptlib.h"
 
 @interface LMNCrypto () {}
 @end

@@ -1,6 +1,6 @@
 {
   "name": "cordova-plugin-lmn-crypto",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "lmn cordova",
   "main": "plugin.xml",
   "scripts": {},
